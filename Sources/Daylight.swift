@@ -13,6 +13,13 @@ struct Daylight {
     var text = "Hello, World!"
 }
 
+enum SolarElevations: Float64 {
+    case astronomicalDawnDusk = -18.0
+    case nauticalDawnDusk =     -12.0
+    case civilDawnDusk =        -6.0
+    case sunriseSunset =        0.0
+}
+
 public typealias JulianDate = Float64
 public typealias JulianCenturies = Float64
 
@@ -259,7 +266,9 @@ public extension JulianDate {
 
 public extension Date {
 
-    public func calculateDawn(location: CLLocationCoordinate2D, solarElevation: Float64, timezone: TimeZone) -> Date {
+    public func calculateDawn(location: CLLocationCoordinate2D,
+                              solarElevation: Float64 = SolarElevations.civilDawnDusk.rawValue,
+                              timezone: TimeZone) -> Date {
         var localCalendar = Calendar(identifier: .gregorian)
         localCalendar.timeZone = timezone
 
@@ -276,9 +285,13 @@ public extension Date {
         let comps = DateComponents(year: localYear, month: localMonth, day: localDay)
         let midnight = gmtCalendar.date(from: comps)!
 
-        let dawn = gmtCalendar.date(byAdding: .second, value: Int(sunriseUTCSecs), to: midnight)!
+        return gmtCalendar.date(byAdding: .second, value: Int(sunriseUTCSecs), to: midnight)!
+    }
 
-        return dawn
+    public func calculateSunrise(location: CLLocationCoordinate2D, timezone: TimeZone) -> Date {
+        return self.calculateDawn(location: location,
+                                  solarElevation: SolarElevations.sunriseSunset.rawValue,
+                                  timezone: timezone)
     }
 
 }

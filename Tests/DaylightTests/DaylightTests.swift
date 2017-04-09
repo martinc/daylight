@@ -116,25 +116,33 @@ class DaylightTests: XCTestCase {
         }
     }
 
+    func checkTimesMatch(date: Date, time: Time, timezone: TimeZone) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timezone
+        let computedHour = calendar.component(.hour, from: date)
+        let computedMinute = calendar.component(.minute, from: date)
+
+        let computedMinutes = Float((computedHour * 60) + computedMinute)
+        let targetMinutes = Float((time.h * 60) + time.m)
+
+        XCTAssertEqualWithAccuracy(computedMinutes, targetMinutes, accuracy: 1.0, "Times need to be within 1 minute")
+    }
+
     func testSunrise() {
-
         for sample in sampleData {
-            let inputDate = sample.dateAtMidnight
-
             let timezone = TimeZone(identifier: sample.location.tz)!
-            let dawn = inputDate.calculateDawn(location: sample.location.coords,
-                                               solarElevation: 0.0,
+            let sunrise = sample.dateAtMidnight.calculateSunrise(location: sample.location.coords,
+                                                     timezone: timezone)
+            checkTimesMatch(date: sunrise, time: sample.sunrise, timezone: timezone)
+        }
+    }
+
+    func testDawn() {
+        for sample in sampleData {
+            let timezone = TimeZone(identifier: sample.location.tz)!
+            let dawn = sample.dateAtMidnight.calculateDawn(location: sample.location.coords,
                                                timezone: timezone)
-
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = timezone
-            let hour = calendar.component(.hour, from: dawn)
-            let minute = calendar.component(.minute, from: dawn)
-
-            let actualMinutes = Float((hour * 60) + minute)
-            let targetMinutes = Float((sample.sunrise.h * 60) + sample.sunrise.m)
-
-            XCTAssertEqualWithAccuracy(actualMinutes, targetMinutes, accuracy: 1.0, "Times need to be within 1 minute")
+            checkTimesMatch(date: dawn, time: sample.dawn, timezone: timezone)
         }
     }
 
@@ -144,7 +152,8 @@ class DaylightTests: XCTestCase {
             ("testJulianTimezone", testJulianTimezone),
             ("testSolarDeclination", testSolarDeclination),
             ("testEquationOfTime", testEquationOfTime),
-            ("testSunrise", testSunrise)
+            ("testSunrise", testSunrise),
+            ("testDawn", testDawn)
         ]
     }
 }
