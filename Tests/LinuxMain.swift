@@ -2,5 +2,5 @@ import XCTest
 @testable import DaylightTests
 
 XCTMain([
-     testCase(DaylightTests.allTests),
+     testCase(DaylightTests.allTests)
 ])
