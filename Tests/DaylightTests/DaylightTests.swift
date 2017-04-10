@@ -6,20 +6,8 @@ import CoreLocation
 
 typealias Coords = CLLocationCoordinate2D
 
-struct Location {
-    let tz: String
-    let coords: Coords
-}
-
 struct Time {
     let h: Int, m: Int
-}
-
-struct Day {
-    let y: Int, m: Int, d: Int
-}
-
-extension Calendar {
 }
 
 struct LocationSample {
@@ -30,8 +18,9 @@ struct LocationSample {
     let declination: Double
 
     var dateAtMidnight: Date {
-        let cal = Calendar.with(timezone: location.tz)
-        let components = DateComponents(calendar: cal, timeZone: cal.timeZone, year: date.y, month: date.m, day: date.d)
+        let cal = Calendar.with(tz: location.tz)
+        let components = DateComponents(calendar: cal, timeZone: cal.timeZone,
+                                        year: date.year, month: date.month, day: date.day)
         return cal.date(from: components)!
     }
 }
@@ -40,15 +29,15 @@ class DaylightTests: XCTestCase {
 
     lazy var sampleData: [LocationSample] = {
 
-        let sydney = Location(tz: "Australia/Sydney",
+        let sydney = Location(tz: TimeZone(identifier: "Australia/Sydney")!,
                               coords: Coords(latitude: -33.86, longitude: 151.20))
-        let stockholm = Location(tz: "Europe/Stockholm",
+        let stockholm = Location(tz: TimeZone(identifier: "Europe/Stockholm")!,
                         coords: Coords(latitude: 59.33, longitude: 18.067))
-        let newyork = Location(tz: "America/New_York",
+        let newyork = Location(tz: TimeZone(identifier: "America/New_York")!,
                               coords: Coords(latitude: 40.642, longitude: -74.017))
 
-        let november = Day(y: 2014, m: 11, d: 1)
-        let july = Day(y: 2015, m: 7, d: 1)
+        let november = Day(year: 2014, month: 11, day: 1)
+        let july = Day(year: 2015, month: 7, day: 1)
 
         return [
             LocationSample(location: sydney, date: november,
@@ -84,38 +73,6 @@ class DaylightTests: XCTestCase {
         ]
     }()
 
-    func testJulianGMT() {
-        let calendar = Calendar.gmt
-        let components = DateComponents(calendar: calendar, year: 2000, month: 1, day: 1)
-        let date = calendar.date(from: components)!
-        let julian = date.julian
-        XCTAssert(julian == 2451544.5)
-    }
-
-    func testJulianTimezone() {
-        var calendar = Calendar(identifier: .gregorian)
-        let tz = TimeZone(abbreviation: "EST")!
-        calendar.timeZone = tz
-        let components = DateComponents(calendar: calendar, timeZone: tz, year: 2000, month: 1, day: 1, hour: 12)
-        let date = calendar.date(from: components)!
-        let julian = date.julianTz(tz)
-        XCTAssertEqualWithAccuracy(julian, 2451544.791667, accuracy: 0.005)
-    }
-
-    func testSolarDeclination() {
-        for data in sampleData {
-            let declination = data.dateAtMidnight.julian.centuries.declinationOfSun
-            XCTAssertEqualWithAccuracy(declination, data.declination, accuracy: 0.005)
-        }
-    }
-
-    func testEquationOfTime() {
-        for data in sampleData {
-            let equationOfTime = data.dateAtMidnight.julian.centuries.equationOfTime
-            XCTAssertEqualWithAccuracy(equationOfTime, data.eot, accuracy: 0.005)
-        }
-    }
-
     func checkTimesMatch(date: Date, time: Time, timezone: TimeZone) {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timezone
@@ -128,32 +85,42 @@ class DaylightTests: XCTestCase {
         XCTAssertEqualWithAccuracy(computedMinutes, targetMinutes, accuracy: 1.0, "Times need to be within 1 minute")
     }
 
-    func testSunrise() {
+    func testDateInterface() {
         for sample in sampleData {
-            let timezone = TimeZone(identifier: sample.location.tz)!
-            let sunrise = sample.dateAtMidnight.calculateSunrise(location: sample.location.coords,
-                                                     timezone: timezone)
+            let timezone = sample.location.tz
+
+            let sunrise = sample.dateAtMidnight.timeOf(.sunrise, at: sample.location)
+            let sunset = sample.dateAtMidnight.timeOf(.sunset, at: sample.location)
+            let dawn = sample.dateAtMidnight.timeOf(.civilDawn, at: sample.location)
+            let dusk = sample.dateAtMidnight.timeOf(.civilDusk, at: sample.location)
+
             checkTimesMatch(date: sunrise, time: sample.sunrise, timezone: timezone)
+            checkTimesMatch(date: sunset, time: sample.sunset, timezone: timezone)
+            checkTimesMatch(date: dawn, time: sample.dawn, timezone: timezone)
+            checkTimesMatch(date: dusk, time: sample.dusk, timezone: timezone)
         }
     }
 
-    func testDawn() {
+    func testDayInterface() {
         for sample in sampleData {
-            let timezone = TimeZone(identifier: sample.location.tz)!
-            let dawn = sample.dateAtMidnight.calculateDawn(location: sample.location.coords,
-                                               timezone: timezone)
+            let sunrise = sample.date.timeOf(.sunrise, at: sample.location)
+            let sunset = sample.date.timeOf(.sunset, at: sample.location)
+            let dawn = sample.date.timeOf(.civilDawn, at: sample.location)
+            let dusk = sample.date.timeOf(.civilDusk, at: sample.location)
+
+            let timezone = sample.location.tz
+
+            checkTimesMatch(date: sunrise, time: sample.sunrise, timezone: timezone)
+            checkTimesMatch(date: sunset, time: sample.sunset, timezone: timezone)
             checkTimesMatch(date: dawn, time: sample.dawn, timezone: timezone)
+            checkTimesMatch(date: dusk, time: sample.dusk, timezone: timezone)
         }
     }
 
     static var allTests: [(String, (DaylightTests) -> () throws -> Void)] {
         return [
-            ("testJulianGMT", testJulianGMT),
-            ("testJulianTimezone", testJulianTimezone),
-            ("testSolarDeclination", testSolarDeclination),
-            ("testEquationOfTime", testEquationOfTime),
-            ("testSunrise", testSunrise),
-            ("testDawn", testDawn)
+            ("testDateInterface", testDateInterface),
+            ("testDayInterface", testDayInterface)
         ]
     }
 }
