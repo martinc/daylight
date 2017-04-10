@@ -117,10 +117,23 @@ class DaylightTests: XCTestCase {
         }
     }
 
+    func testNextEvent() {
+
+        for sample in sampleData {
+            let midnight = sample.dateAtMidnight
+            let sunrise = midnight.timeOfNext(.sunrise, at: sample.location)
+            let sunset = midnight.timeOfNext(.sunset, at: sample.location)
+
+            checkTimesMatch(date: sunrise, time: sample.sunrise, timezone: sample.location.tz)
+            checkTimesMatch(date: sunset, time: sample.sunset, timezone: sample.location.tz)
+        }
+    }
+
     static var allTests: [(String, (DaylightTests) -> () throws -> Void)] {
         return [
             ("testDateInterface", testDateInterface),
-            ("testDayInterface", testDayInterface)
+            ("testDayInterface", testDayInterface),
+            ("testNextEvent", testNextEvent)
         ]
     }
 }

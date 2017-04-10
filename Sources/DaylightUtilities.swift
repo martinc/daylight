@@ -28,6 +28,22 @@ internal extension Calendar {
     }
 }
 
+// Date manipulation utilities
+
+internal extension Date {
+    var dayBefore: Date {
+        return addDays(-1)
+    }
+
+    var dayAfter: Date {
+        return addDays(1)
+    }
+
+    private func addDays(_ days: Int) -> Date {
+        return Calendar.gmt.date(byAdding: DateComponents(day: days), to: self)!
+    }
+}
+
 // Julian Date utilities
 
 internal extension Date {

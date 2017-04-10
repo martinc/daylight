@@ -70,6 +70,14 @@ public extension Date {
         }
     }
 
+    public func timeOfNext(_ solarEvent: SolarEvent, at location: Location) -> Date {
+        var time = self.timeOf(solarEvent, at: location)
+        if self >= time {
+            time = self.dayAfter.timeOf(solarEvent, at: location)
+        }
+        return time
+    }
+
     private func calculateDawn(location: CLLocationCoordinate2D,
                                solarElevation: Float64,
                                timezone: TimeZone) -> Date {
