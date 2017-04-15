@@ -10,6 +10,7 @@ import CoreLocation
 
 public enum SolarEvent {
     case sunrise
+    case noon
     case sunset
     case civilDawn
     case civilDusk
@@ -26,7 +27,7 @@ public enum SolarEvent {
             return .nauticalDawnDusk
         case .civilDawn, .civilDusk:
             return .civilDawnDusk
-        case .sunrise, .sunset:
+        case .sunrise, .sunset, .noon:
             return .sunriseSunset
         }
     }
@@ -67,6 +68,9 @@ public extension Date {
             return calculateDusk(location: location.coords,
                                            solarElevation: solarEvent.elevation.rawValue,
                                            timezone: location.tz)
+        case .noon:
+            return calculateNoon(location: location.coords,
+                                 timezone: location.tz)
         }
     }
 
@@ -96,6 +100,19 @@ public extension Date {
         let duskUTCMins = julianDate.sunsetUTC(location: location, solarElevation: solarElevation)
 
         return self.dateFromTimeUTC(timeUTCMins: duskUTCMins, timezone: timezone)
+    }
+
+    private func calculateNoon(location: CLLocationCoordinate2D,
+                               timezone: TimeZone) -> Date {
+
+        let sunrise = calculateDawn(location: location,
+                                    solarElevation: SolarEvent.sunrise.elevation.rawValue,
+                                    timezone: timezone)
+        let sunset = calculateDusk(location: location,
+                                   solarElevation: SolarEvent.sunset.elevation.rawValue,
+                                   timezone: timezone)
+        let dayLength = sunset.timeIntervalSince(sunrise)
+        return sunrise + (dayLength / 2.0)
     }
 
 }
