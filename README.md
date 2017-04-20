@@ -32,6 +32,7 @@ Interface
 
 public enum SolarEvent {
     case sunrise
+    case noon
     case sunset
     case civilDawn
     case civilDusk
@@ -57,4 +58,11 @@ public extension Date {
 }
 
 ```
+
+### Running tests
+
+In addition to with XCode, you can run the test suite via the command-line with the following command:
+
+    swift test
+
 
