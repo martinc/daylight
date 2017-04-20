@@ -42,6 +42,12 @@ internal extension Date {
     private func addDays(_ days: Int) -> Date {
         return Calendar.gmt.date(byAdding: DateComponents(day: days), to: self)!
     }
+    
+    func atMidnight(timeZone: TimeZone) -> Date {
+        let calendar = Calendar.with(tz: timeZone)
+        let components = calendar.dateComponents(Set([.day, .month, .year]), from: self)
+        return calendar.date(from: components)!
+    }
 }
 
 // Julian Date utilities

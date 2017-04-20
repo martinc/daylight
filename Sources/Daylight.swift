@@ -43,10 +43,21 @@ internal enum SolarElevation: Float64 {
 public struct Location {
     public let tz: TimeZone
     public let coords: CLLocationCoordinate2D
+    
+    public init(tz: TimeZone, coords: CLLocationCoordinate2D) {
+        self.tz = tz
+        self.coords = coords
+    }
 }
 
 public struct Day {
     public let year: Int, month: Int, day: Int
+    
+    public init(year: Int, month: Int, day: Int) {
+        self.year = year
+        self.month = month
+        self.day = day
+    }
 
     public func timeOf(_ solarEvent: SolarEvent, at location: Location) -> Date {
         let components = DateComponents(year: year, month: month, day: day)
@@ -86,7 +97,8 @@ public extension Date {
                                solarElevation: Float64,
                                timezone: TimeZone) -> Date {
 
-        let julianDate = self.julianTz(timezone)
+        let midnight = self.atMidnight(timeZone: timezone)
+        let julianDate = midnight.julianTz(timezone)
         let sunriseUTCMins = julianDate.sunriseUTC(location: location, solarElevation: solarElevation)
 
         return self.dateFromTimeUTC(timeUTCMins: sunriseUTCMins, timezone: timezone)
@@ -96,7 +108,8 @@ public extension Date {
                                solarElevation: Float64,
                                timezone: TimeZone) -> Date {
 
-        let julianDate = self.julianTz(timezone)
+        let midnight = self.atMidnight(timeZone: timezone)
+        let julianDate = midnight.julianTz(timezone)
         let duskUTCMins = julianDate.sunsetUTC(location: location, solarElevation: solarElevation)
 
         return self.dateFromTimeUTC(timeUTCMins: duskUTCMins, timezone: timezone)
