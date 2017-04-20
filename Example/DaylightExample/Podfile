@@ -1,0 +1,6 @@
+target 'DaylightExample' do
+  use_frameworks!
+
+	pod 'Daylight', :path => '../../'
+
+end

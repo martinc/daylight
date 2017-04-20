@@ -1,0 +1,16 @@
+PODS:
+  - Daylight (0.1.0)
+
+DEPENDENCIES:
+  - Daylight (from `../../`)
+
+EXTERNAL SOURCES:
+  Daylight:
+    :path: "../../"
+
+SPEC CHECKSUMS:
+  Daylight: 268c3b9e95650792868087b21e70cf8bc495f23b
+
+PODFILE CHECKSUM: 7c17fd3cb715b200b4a4fcb54f901d384edd112e
+
+COCOAPODS: 1.2.0
