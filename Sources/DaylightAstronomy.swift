@@ -134,7 +134,7 @@ internal extension JulianDate {
     private typealias HourAngleFunction = (
         _ latitude: Float64,
         _ solarDeclination: Float64,
-        _ solarElevation: Float64) -> Float64
+        _ solarElevation: Float64) throws -> Float64
 
     // Purpose: calculate the Universal Coordinated Time (UTC) of the given solar position
     //			for the given day at the given location on earth
@@ -143,14 +143,14 @@ internal extension JulianDate {
 
     private func calculateTimeUTCatHourAngle(location: CLLocationCoordinate2D,
                                              solarElevation: Float64,
-                                             hourAngleFunction: @escaping HourAngleFunction ) -> Float64 {
+                                             hourAngleFunction: @escaping HourAngleFunction ) throws -> Float64 {
 
         let longitude = location.longitude * -1
 
-        func calculateTime(from centuries: JulianCenturies) -> Float64 {
+        func calculateTime(from centuries: JulianCenturies) throws -> Float64 {
             let eqTime = centuries.equationOfTime
             let declination = centuries.declinationOfSun
-            let hourAngle = hourAngleFunction(location.latitude, declination, solarElevation)
+            let hourAngle = try hourAngleFunction(location.latitude, declination, solarElevation)
             let delta = longitude - hourAngle.radToDeg
             let timeDiff = delta * 4.0
             return 720.0 + timeDiff - eqTime
@@ -162,23 +162,23 @@ internal extension JulianDate {
 
         // First Pass
 
-        let timeUTC = calculateTime(from: noonTime)
+        let timeUTC = try calculateTime(from: noonTime)
 
         // Second Pass
 
         let newTime = (JulianDate.from(centuries: centuries) + (timeUTC/1440.0)).centuries
-        let finalTimeUTC = calculateTime(from: newTime)
+        let finalTimeUTC = try calculateTime(from: newTime)
         return finalTimeUTC
     }
 
-    func sunriseUTC(location: CLLocationCoordinate2D, solarElevation: Float64) -> Float64 {
-        return calculateTimeUTCatHourAngle(location: location,
-                                           solarElevation: solarElevation,
-                                           hourAngleFunction: hourAngleOfSunrise)
+    func sunriseUTC(location: CLLocationCoordinate2D, solarElevation: Float64) throws -> Float64  {
+        return try calculateTimeUTCatHourAngle(location: location,
+                                               solarElevation: solarElevation,
+                                               hourAngleFunction: hourAngleOfSunrise)
     }
 
-    func sunsetUTC(location: CLLocationCoordinate2D, solarElevation: Float64) -> Float64 {
-        return calculateTimeUTCatHourAngle(location: location,
+    func sunsetUTC(location: CLLocationCoordinate2D, solarElevation: Float64) throws -> Float64 {
+        return try calculateTimeUTCatHourAngle(location: location,
                                            solarElevation: solarElevation,
                                            hourAngleFunction: hourAngleOfSunset)
     }
@@ -218,26 +218,41 @@ private func refractiveCorrection(solarElevation: Float64) -> Float64 {
     }
 }
 
-private func hourAngleOfSunrise(latitude: Float64, solarDeclination: Float64, solarElevation: Float64) -> Float64 {
+private func hourAngleOfSunrise(latitude: Float64, solarDeclination: Float64, solarElevation: Float64) throws -> Float64 {
 
     let latRad = latitude.degToRad
     let sdRad = solarDeclination.degToRad
     let correction = refractiveCorrection(solarElevation: solarElevation)
+    let cosH = cos((90+correction).degToRad)/(cos(latRad)*cos(sdRad)) - tan(latRad)*tan(sdRad)
 
-    return (acos(cos((90+correction).degToRad)/(cos(latRad)*cos(sdRad)) - tan(latRad)*tan(sdRad)))
+    if cosH > 1 {
+        throw SolarEventError.neverRise
+    }
+    if cosH < -1 {
+        throw SolarEventError.neverSet
+    }
+
+    return (acos(cosH))
 }
 
-private func hourAngleOfSunset(latitude: Float64, solarDeclination: Float64, solarElevation: Float64) -> Float64 {
+private func hourAngleOfSunset(latitude: Float64, solarDeclination: Float64, solarElevation: Float64) throws -> Float64 {
 
     let latRad = latitude.degToRad
     let sdRad = solarDeclination.degToRad
     let correction = refractiveCorrection(solarElevation: solarElevation)
 
-    let hourAngle = acos(
-        cos((90.0 + correction).degToRad) /
-            (cos(latRad) * cos(sdRad)) -
-            (tan(latRad) * tan(sdRad))
-    )
+    let cosH = cos((90.0 + correction).degToRad) /
+        (cos(latRad) * cos(sdRad)) -
+        (tan(latRad) * tan(sdRad))
+
+    if cosH > 1 {
+        throw SolarEventError.neverRise
+    }
+    if cosH < -1 {
+        throw SolarEventError.neverSet
+    }
+
+    let hourAngle = acos(cosH)
 
     return -hourAngle
 }
