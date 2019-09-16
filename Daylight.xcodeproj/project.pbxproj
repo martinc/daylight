@@ -29,7 +29,7 @@
 		5B402B671E9B29FF0079BE20 /* DaylightAstronomy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaylightAstronomy.swift; sourceTree = "<group>"; };
 		OBJ_12 /* DaylightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaylightTests.swift; sourceTree = "<group>"; };
 		OBJ_14 /* Daylight.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Daylight.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		OBJ_15 /* DaylightTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = DaylightTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		OBJ_15 /* DaylightTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = DaylightTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		OBJ_9 /* Daylight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Daylight.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -53,6 +53,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E82443BC23302AF1002F82AD /* Daylight */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_9 /* Daylight.swift */,
+				5B402B651E9B29A20079BE20 /* DaylightUtilities.swift */,
+				5B402B671E9B29FF0079BE20 /* DaylightAstronomy.swift */,
+			);
+			path = Daylight;
+			sourceTree = "<group>";
+		};
 		OBJ_10 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -92,21 +102,10 @@
 		OBJ_7 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_8 /* Daylight */,
+				E82443BC23302AF1002F82AD /* Daylight */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
-		};
-		OBJ_8 /* Daylight */ = {
-			isa = PBXGroup;
-			children = (
-				OBJ_9 /* Daylight.swift */,
-				5B402B651E9B29A20079BE20 /* DaylightUtilities.swift */,
-				5B402B671E9B29FF0079BE20 /* DaylightAstronomy.swift */,
-			);
-			name = Daylight;
-			path = Sources;
-			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -158,6 +157,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = OBJ_5;
@@ -229,11 +229,13 @@
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Daylight.xcodeproj/Daylight_Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = Daylight;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = Daylight;
 			};
 			name = Debug;
@@ -249,11 +251,13 @@
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Daylight.xcodeproj/Daylight_Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = Daylight;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = Daylight;
 			};
 			name = Release;
@@ -271,6 +275,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = DaylightTests;
 			};
 			name = Debug;
@@ -288,6 +293,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = DaylightTests;
 			};
 			name = Release;
