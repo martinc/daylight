@@ -8,6 +8,11 @@
 import Foundation
 import CoreLocation
 
+public enum SolarEventError: Error {
+    case neverRise
+    case neverSet
+}
+
 public enum SolarEvent {
     case sunrise
     case noon
@@ -59,69 +64,68 @@ public struct Day {
         self.day = day
     }
 
-    public func timeOf(_ solarEvent: SolarEvent, at location: Location) -> Date {
+    public func timeOf(_ solarEvent: SolarEvent, at location: Location) throws -> Date {
         let components = DateComponents(year: year, month: month, day: day)
         let calendar = Calendar.with(tz: location.tz)
         let inputDate = calendar.date(from: components)!
-        return inputDate.timeOf(solarEvent, at: location)
+        return try inputDate.timeOf(solarEvent, at: location)
     }
 }
 
 public extension Date {
 
-    public func timeOf(_ solarEvent: SolarEvent, at location: Location) -> Date {
+    func timeOf(_ solarEvent: SolarEvent, at location: Location) throws -> Date {
         switch solarEvent {
         case .sunrise, .civilDawn, .nauticalDawn, .astronomicalDawn:
-            return calculateDawn(location: location.coords,
-                                           solarElevation: solarEvent.elevation.rawValue,
-                                           timezone: location.tz)
+            return try calculateDawn(location: location.coords,
+                                 solarElevation: solarEvent.elevation.rawValue,
+                                 timezone: location.tz)
         case .sunset, .civilDusk, .nauticalDusk, .astronomicalDusk:
-            return calculateDusk(location: location.coords,
-                                           solarElevation: solarEvent.elevation.rawValue,
-                                           timezone: location.tz)
+            return try calculateDusk(location: location.coords,
+                                 solarElevation: solarEvent.elevation.rawValue,
+                                 timezone: location.tz)
         case .noon:
-            return calculateNoon(location: location.coords,
+            return try calculateNoon(location: location.coords,
                                  timezone: location.tz)
         }
     }
 
-    public func timeOfNext(_ solarEvent: SolarEvent, at location: Location) -> Date {
-        var time = self.timeOf(solarEvent, at: location)
+    func timeOfNext(_ solarEvent: SolarEvent, at location: Location) throws -> Date {
+        var time = try timeOf(solarEvent, at: location)
         if self >= time {
-            time = self.dayAfter.timeOf(solarEvent, at: location)
+            time = try dayAfter.timeOf(solarEvent, at: location)
         }
         return time
     }
 
     private func calculateDawn(location: CLLocationCoordinate2D,
                                solarElevation: Float64,
-                               timezone: TimeZone) -> Date {
+                               timezone: TimeZone) throws -> Date {
 
         let midnight = self.atMidnight(timeZone: timezone)
         let julianDate = midnight.julianTz(timezone)
-        let sunriseUTCMins = julianDate.sunriseUTC(location: location, solarElevation: solarElevation)
+        let sunriseUTCMins = try julianDate.sunriseUTC(location: location, solarElevation: solarElevation)
 
         return self.dateFromTimeUTC(timeUTCMins: sunriseUTCMins, timezone: timezone)
     }
 
     private func calculateDusk(location: CLLocationCoordinate2D,
                                solarElevation: Float64,
-                               timezone: TimeZone) -> Date {
+                               timezone: TimeZone) throws -> Date {
 
         let midnight = self.atMidnight(timeZone: timezone)
         let julianDate = midnight.julianTz(timezone)
-        let duskUTCMins = julianDate.sunsetUTC(location: location, solarElevation: solarElevation)
+        let duskUTCMins = try julianDate.sunsetUTC(location: location, solarElevation: solarElevation)
 
         return self.dateFromTimeUTC(timeUTCMins: duskUTCMins, timezone: timezone)
     }
 
     private func calculateNoon(location: CLLocationCoordinate2D,
-                               timezone: TimeZone) -> Date {
-
-        let sunrise = calculateDawn(location: location,
+                               timezone: TimeZone) throws -> Date {
+        let sunrise = try calculateDawn(location: location,
                                     solarElevation: SolarEvent.sunrise.elevation.rawValue,
                                     timezone: timezone)
-        let sunset = calculateDusk(location: location,
+        let sunset = try calculateDusk(location: location,
                                    solarElevation: SolarEvent.sunset.elevation.rawValue,
                                    timezone: timezone)
         let dayLength = sunset.timeIntervalSince(sunrise)
