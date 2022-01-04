@@ -82,7 +82,7 @@ class DaylightTests: XCTestCase {
         let computedMinutes = Float((computedHour * 60) + computedMinute)
         let targetMinutes = Float((time.h * 60) + time.m)
 
-        XCTAssertEqualWithAccuracy(computedMinutes, targetMinutes, accuracy: 1.0, "Times need to be within 1 minute")
+        XCTAssertEqual(computedMinutes, targetMinutes, accuracy: 1.0, "Times need to be within 1 minute")
     }
 
     func testDateInterface() {
