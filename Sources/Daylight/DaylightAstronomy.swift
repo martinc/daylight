@@ -189,7 +189,7 @@ internal extension JulianDate {
 
 internal extension Date {
 
-    internal func dateFromTimeUTC(timeUTCMins: Float64, timezone: TimeZone) -> Date {
+    func dateFromTimeUTC(timeUTCMins: Float64, timezone: TimeZone) -> Date {
 
         var localCalendar = Calendar(identifier: .gregorian)
         localCalendar.timeZone = timezone

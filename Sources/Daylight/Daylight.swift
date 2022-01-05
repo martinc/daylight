@@ -69,7 +69,7 @@ public struct Day {
 
 public extension Date {
 
-    public func timeOf(_ solarEvent: SolarEvent, at location: Location) -> Date {
+    func timeOf(_ solarEvent: SolarEvent, at location: Location) -> Date {
         switch solarEvent {
         case .sunrise, .civilDawn, .nauticalDawn, .astronomicalDawn:
             return calculateDawn(location: location.coords,
@@ -85,7 +85,7 @@ public extension Date {
         }
     }
 
-    public func timeOfNext(_ solarEvent: SolarEvent, at location: Location) -> Date {
+    func timeOfNext(_ solarEvent: SolarEvent, at location: Location) -> Date {
         var time = self.timeOf(solarEvent, at: location)
         if self >= time {
             time = self.dayAfter.timeOf(solarEvent, at: location)
